@@ -57,7 +57,7 @@ class Periodic(nn.Module):
         self.nn_weight = MLP(input_dim=self.embed_size, output_dim=self.base)     
         self.nn_phase = MLP(input_dim=self.embed_size, output_dim=self.base)   
 
-        self.two_pi = torch.tensor(2 * np.pi, dtype=torch.float32)
+        self.two_pi = torch.tensor(2 * np.pi, dtype=torch.float32).to("cuda")
 
     def generate_timestamps(self, batch_size, length):
         t = torch.arange(0, length, dtype=torch.float32, device=self.two_pi.device)
@@ -67,8 +67,8 @@ class Periodic(nn.Module):
     def forward(self, x):
         batch_size, time_len, feature_dim = x.shape
 
-        weights = torch.mean(self.nn_weight(x), dim=1)  
-        phases = torch.mean(self.nn_phase(x), dim=1)    
+        weights = torch.mean(self.nn_weight(x), dim=1).to("cuda")  
+        phases = torch.mean(self.nn_phase(x), dim=1).to("cuda")    
         t = self.generate_timestamps(batch_size, time_len) 
 
         periods = torch.arange(2, self.base + 2, dtype=torch.float32, device=self.two_pi.device)
