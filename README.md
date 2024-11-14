@@ -1,10 +1,10 @@
-# TS - Diffusion Distillation
+# Master's Thesis Project : Diffusion Distillation-FS 
 
-This repository provides an extension of the Diffusion TS model, proposed in https://github.com/Y-debug-sys/Diffusion-TS. 
+This repository provides an extension of the Diffusion TS model, proposed in https://github.com/Y-debug-sys/Diffusion-TS; it also provides an implementation of Progressive Distillation, extending the methodology to the Time Series domain. 
 
-Distillation of the originally trained model leads to significantly faster Sampling, as sampling steps are reduced in half at each iteration of Distillation. The training procedure follows from what was proposed in "Progressive Distillation for Fast Sampling of Diffusion Models", by Tim Salimans and Jonathan Ho https://openreview.net/forum?id=TIdIXIpzhoI . 
+Distillation of the originally trained model reduces by half the Diffusion step of the teacher, rendering the original network into a narrower, faster one. The training procedure follows from what is originally proposed in "Progressive Distillation for Fast Sampling of Diffusion Models", by Tim Salimans and Jonathan Ho https://openreview.net/forum?id=TIdIXIpzhoI . 
 
-
+This is work for my Master's Thesis, which is still in progress, thus the code will still be most likely subject to changes / additions. The attached Jupyter Notebook can be run in Google Colab, obtaining reasonable computational times even with the weakest GPUs available. 
 ## Acknowledgements
 
 I made use of the following github repos for their valuable code base:
