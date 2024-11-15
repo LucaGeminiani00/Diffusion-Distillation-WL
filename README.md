@@ -1,6 +1,6 @@
 # Master's Thesis Project : Diffusion Distillation-FS 
 
-This repository provides an extension of the Diffusion TS model, proposed in https://github.com/Y-debug-sys/Diffusion-TS; it also provides an implementation of Progressive Distillation, extending the methodology to the Time Series domain. 
+This repository provides an extension of the Diffusion TS model, proposed in https://github.com/Y-debug-sys/Diffusion-TS, which changes the underlying logic for learning the Seasonal and Trend components of the model; it also provides an implementation of Progressive Distillation, extending the methodology to the Time Series domain. 
 
 Distillation of the originally trained model reduces by half the Diffusion step of the teacher, rendering the original network into a narrower, faster one. The training procedure follows from what is originally proposed in "Progressive Distillation for Fast Sampling of Diffusion Models", by Tim Salimans and Jonathan Ho https://openreview.net/forum?id=TIdIXIpzhoI . 
 
