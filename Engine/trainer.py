@@ -53,7 +53,7 @@ class Engine(object):
             self.logger.log_info(str(get_model_parameters_info(self.model)))
         self.log_frequency = 100
 
-    def save(self, milestone, verbose=False):
+    def save(self, milestone, distill=False, verbose=False):
         if self.logger is not None and verbose:
             self.logger.log_info('Save current model to {}'.format(str(self.results_folder / f'checkpoint-{milestone}.pt')))
         data = {
@@ -62,7 +62,10 @@ class Engine(object):
             'ema': self.ema.state_dict(),
             'opt': self.opt.state_dict(),
         }
-        torch.save(data, str(self.results_folder / f'checkpoint-{milestone}.pt'))
+        if distill: 
+            torch.save(data, str(self.results_folder / f'distill-final-{milestone}.pt'))
+        else: 
+            torch.save(data, str(self.results_folder / f'checkpoint-{milestone}.pt'))
 
     def load(self, milestone, verbose=False):
         if self.logger is not None and verbose:
@@ -128,7 +131,7 @@ class Engine(object):
         step = 0
         if self.logger is not None:
             tic = time.time()
-            self.logger.log_info('{}: start training...'.format(self.args.name), check_primary=False)
+            self.logger.log_info('{}: start training student...'.format(self.args.name), check_primary=False)
 
         with tqdm(initial=step, total=self.progr_numsteps) as pbar:
             while step < self.progr_numsteps:
@@ -151,17 +154,16 @@ class Engine(object):
                 self.ema.update()
 
                 with torch.no_grad():
-                    if self.step != 0 and self.step % self.save_cycle == 0:
+                    if self.step % self.progr_numsteps == 0:
                         self.milestone += 1
-                        self.save(self.milestone)
-                        # self.logger.log_info('saved in {}'.format(str(self.results_folder / f'checkpoint-{self.milestone}.pt')))
+                        self.save(self.milestone, distill=True)
                     
                     if self.logger is not None and self.step % self.log_frequency == 0:
                         # info = '{}: train'.format(self.args.name)
                         # info = info + ': Epoch {}/{}'.format(self.step, self.train_num_steps)
                         # info += ' ||'
                         # info += '' if loss_f == 'none' else ' Fourier Loss: {:.4f}'.format(loss_f.item())
-                        # info += '' if loss_r == 'none' else ' Reglarization: {:.4f}'.format(loss_r.item())
+                        # info += '' if loss_r == 'none' else ' Regularization: {:.4f}'.format(loss_r.item())
                         # info += ' | Total Loss: {:.6f}'.format(total_loss)
                         # self.logger.log_info(info)
                         self.logger.add_scalar(tag='train/loss', scalar_value=total_loss, global_step=self.step)
