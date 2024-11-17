@@ -1,4 +1,4 @@
-# Progressive Distillation of Diffusion models for Time Series synthesis 
+# Wavelet Diffusion and Progressive Distillation for Time Series synthesis 
 
 This repository provides an extension of the Diffusion TS model, proposed in https://github.com/Y-debug-sys/Diffusion-TS, which changes the underlying logic for learning the Seasonal and Trend components of the model; it also provides an implementation of Progressive Distillation, extending the methodology to the Time Series domain. 
 
