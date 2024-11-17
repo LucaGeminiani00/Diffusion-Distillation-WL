@@ -9,6 +9,8 @@ This is work for my Master's Thesis, which is still in progress, thus the code w
 
 I made use of the following github repos for their valuable code base:
 
+https://github.com/fbcotter/pytorch_wavelets
+
 https://github.com/lucidrains/denoising-diffusion-pytorch
 
 https://github.com/cientgu/VQ-Diffusion
