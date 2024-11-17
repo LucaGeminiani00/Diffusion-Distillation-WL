@@ -5,18 +5,7 @@ import torch
 
 
 class DWT1DForward(nn.Module):
-    """ Performs a 1d DWT Forward decomposition of an image
-
-    Args:
-        J (int): Number of levels of decomposition
-        wave (str or pywt.Wavelet or tuple(ndarray)): Which wavelet to use.
-            Can be:
-            1) a string to pass to pywt.Wavelet constructor
-            2) a pywt.Wavelet class
-            3) a tuple of numpy arrays (h0, h1)
-        mode (str): 'zero', 'symmetric', 'reflect' or 'periodization'. The
-            padding scheme
-        """
+   
     def __init__(self, J=1, wave='db1', mode='zero'):
         super().__init__()
         if isinstance(wave, str):
@@ -60,17 +49,6 @@ class DWT1DForward(nn.Module):
 
 
 class DWT1DInverse(nn.Module):
-    """ Performs a 1d DWT Inverse reconstruction of an image
-
-    Args:
-        wave (str or pywt.Wavelet or tuple(ndarray)): Which wavelet to use.
-            Can be:
-            1) a string to pass to pywt.Wavelet constructor
-            2) a pywt.Wavelet class
-            3) a tuple of numpy arrays (h0, h1)
-        mode (str): 'zero', 'symmetric', 'reflect' or 'periodization'. The
-            padding scheme
-    """
     def __init__(self, wave='db1', mode='zero'):
         super().__init__()
         if isinstance(wave, str):
