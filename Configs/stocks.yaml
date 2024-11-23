@@ -19,7 +19,7 @@ model:
 
 solver:
   base_lr: 1.0e-5
-  max_epochs: 5000 #Not original 
+  max_epochs: 10000 #Not original 
   progr_epochs: 2500 #Not original
   results_folder: ./Checkpoints_stock
   gradient_accumulate_every: 2
