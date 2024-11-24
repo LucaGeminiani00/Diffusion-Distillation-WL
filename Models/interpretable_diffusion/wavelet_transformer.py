@@ -10,7 +10,7 @@ from Models.interpretable_diffusion.model_utils import (
     Conv_MLP,
     LearnablePositionalEncoding,
 )
-from Models.interpretable_diffusion.wave1d import DWT1DForward, DWT1DInverse
+from pytorch_wavelets import DWT1DForward, DWT1DInverse
 
 
 class MLP(nn.Module):     #Adjusted MLP Model 
