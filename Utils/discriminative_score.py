@@ -51,7 +51,7 @@ def discriminative_score(ori_data, generated_data):
     train_x, train_x_hat, test_x, test_x_hat, train_t, train_t_hat, test_t, test_t_hat = \
         train_test_divide(ori_data, generated_data, ori_time, generated_time)
 
-    for itt in tqdm(range(iterations), desc='training', total=iterations):
+    for itt in tqdm(range(iterations), desc='training discriminator', total=iterations):
           
         X_mb, T_mb = batch_generator(train_x, train_t, batch_size)
         X_hat_mb, T_hat_mb = batch_generator(train_x_hat, train_t_hat, batch_size)
