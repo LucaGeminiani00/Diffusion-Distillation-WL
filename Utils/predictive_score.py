@@ -70,7 +70,7 @@ def predictive_score(ori_data, generated_data):
     
     MAE_temp = 0
     for i in range(no):
-        MAE_temp += mean_absolute_error(Y_mb[i].cpu().numpy(), pred_Y_curr[i, :, :].cpu().numpy())
+        MAE_temp += torch.mean(torch.abs(Y_mb - pred_Y_curr))
     
     predictive_score = MAE_temp / no
     
