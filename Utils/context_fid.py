@@ -1,6 +1,5 @@
 import scipy
 import numpy as np
-import torch
 
 from Models.ts2vec.ts2vec import TS2Vec
 
@@ -21,8 +20,7 @@ def calculate_fid(act1, act2):
     return fid
 
 def Context_FID(ori_data, generated_data):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = TS2Vec(input_dims=ori_data.shape[-1], device=device, batch_size=8, lr=0.001, output_dims=320,
+    model = TS2Vec(input_dims=ori_data.shape[-1], device=0, batch_size=8, lr=0.001, output_dims=320,
                    max_train_length=3000)
     model.fit(ori_data, verbose=False)
     ori_represenation = model.encode(ori_data, encoding_window='full_series')
