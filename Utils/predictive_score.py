@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from tqdm.auto import tqdm
 from sklearn.metrics import mean_absolute_error
 
 from Utils.metric_utils import extract_time
