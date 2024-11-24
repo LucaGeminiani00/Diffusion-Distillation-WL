@@ -35,7 +35,7 @@ def predictive_score(ori_data, generated_data):
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     
-    for itt in range(iterations):
+    for itt in tqdm(range(iterations), desc='training predictor', total=iterations):
         idx = np.random.permutation(len(generated_data))
         train_idx = idx[:batch_size]     
             
