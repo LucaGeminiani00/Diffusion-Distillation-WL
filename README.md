@@ -6,7 +6,7 @@
   <img src="Assets/kernel.png" alt="Image 3" width="200">
 </div>
 
-
+## Project Description 
 
 This repository provides an extension of the Diffusion TS model, proposed in https://github.com/Y-debug-sys/Diffusion-TS, which changes the underlying logic for learning the Seasonal and Trend components of the model; it also provides an implementation of Progressive Distillation, extending the methodology to the Time Series domain. 
 
