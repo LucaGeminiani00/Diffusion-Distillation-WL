@@ -7,16 +7,17 @@
 </div>
 
 <div align="center">
-  <a href="https://github.com/your-username/your-repo/releases">
-    <img src="https://img.shields.io/github/v/release/your-username/your-repo" alt="Release">
+  <a href="https://github.com/LucaGeminiani00/Diffusion-Distillation-WL/releases">
+    <img src="https://img.shields.io/github/v/release/LucaGeminiani00/Diffusion-Distillation-WL" alt="Release">
   </a>
-  <a href="https://github.com/your-username/your-repo/actions">
-    <img src="https://img.shields.io/github/actions/workflow/status/your-username/your-repo/build.yml" alt="Build Status">
+  <a href="https://github.com/LucaGeminiani00/Diffusion-Distillation-WL/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/LucaGeminiani00/Diffusion-Distillation-WL/build.yml" alt="Build Status">
   </a>
-  <a href="LICENSE">
-    <img src="https://img.shields.io/github/license/your-username/your-repo" alt="License">
+  <a href="https://github.com/LucaGeminiani00/Diffusion-Distillation-WL/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/LucaGeminiani00/Diffusion-Distillation-WL" alt="License">
   </a>
 </div>
+
 
 ## Project Description 
 
