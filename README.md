@@ -1,3 +1,12 @@
+# Project Name
+
+<div align="center">
+  <img src="Assets/tsne.png" alt="Image 1" width="200">
+  <img src="Assets/pca.png" alt="Image 2" width="200">
+  <img src="Assets/kernel.png" alt="Image 3" width="200">
+</div>
+
+
 # Progressive Distillation of Diffusion models for Time Series synthesis 
 
 This repository provides an extension of the Diffusion TS model, proposed in https://github.com/Y-debug-sys/Diffusion-TS, which changes the underlying logic for learning the Seasonal and Trend components of the model; it also provides an implementation of Progressive Distillation, extending the methodology to the Time Series domain. 
