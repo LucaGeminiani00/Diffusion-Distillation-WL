@@ -6,6 +6,10 @@
   <img src="Assets/kernel.png" alt="Image 3" width="200">
 </div>
 
+[![Release](https://img.shields.io/github/v/release/your-username/your-repo)](https://github.com/your-username/your-repo/releases)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/your-username/your-repo/build.yml)](https://github.com/your-username/your-repo/actions)
+[![License](https://img.shields.io/github/license/your-username/your-repo)](LICENSE)
+
 ## Project Description 
 
 This repository provides an extension of the Diffusion TS model, proposed in https://github.com/Y-debug-sys/Diffusion-TS, which changes the underlying logic for learning the Seasonal and Trend components of the model; it also provides an implementation of Progressive Distillation, extending the methodology to the Time Series domain. 
