@@ -9,7 +9,12 @@ from ema_pytorch import EMA
 from torch.nn.utils import clip_grad_norm_
 from torch.optim import Adam
 from tqdm.auto import tqdm
-from Utils.io_utils import get_model_parameters_info, instantiate_from_config
+from Utils.fix_tensors import clean_keys, reshape_tensors
+from Utils.io_utils import (
+    build_from_teacher,
+    get_model_parameters_info,
+    instantiate_from_config,
+)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 
@@ -17,6 +22,39 @@ def cycle(dl):
     while True:
         for data in dl:
             yield data
+
+def full_distill(teacher, configs, dl_info, iters):
+    teacher_keys = teacher.model.state_dict()
+    numsteps = teacher.model.num_timesteps
+    changeable = clean_keys(teacher_keys, numsteps)
+
+    students = {} 
+    count = 0
+
+    for count in range(iters):
+        if count == 0:
+            reshape_tensors(teacher_keys, changeable)
+            next_config, next_model = build_from_teacher(config=configs, device=teacher.device)
+
+            student = Engine(config=next_config, args=teacher.args, model=next_model, dataloader=dl_info)
+            student.model.load_state_dict(teacher_keys)
+            student.model.teacher = teacher
+            student.distill()
+
+            students[f"student{count}"] = student
+        else:
+            teacher_keys = students[f"student{count - 1}"].model.state_dict()
+            reshape_tensors(teacher_keys, changeable)
+            next_config, next_model = build_from_teacher(config=next_config, device=teacher.device)
+
+            student = Engine(config=next_config, args=teacher.args, model=next_model, dataloader=dl_info)
+            student.model.load_state_dict(teacher_keys)
+            student.model.teacher = students[f"student{count - 1}"]
+            student.distill()
+
+            students[f"student{count}"] = student
+
+    return students
 
 
 class Engine(object):

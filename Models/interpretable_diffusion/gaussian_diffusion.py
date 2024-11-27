@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional as F
 from einops import reduce
 from Models.interpretable_diffusion.model_utils import default, extract, identity
-from Models.interpretable_diffusion.phase_transformer import PhaseTransformer
+from Models.interpretable_diffusion.wavelet_transformer import WaveletTransformer
 from torch import nn
 from tqdm.auto import tqdm
 
@@ -61,7 +61,7 @@ class Diffusion_FS(nn.Module):
         self.feature_size = feature_size
         self.ff_weight = default(reg_weight, math.sqrt(self.seq_length) / 5)
 
-        self.model = PhaseTransformer(n_feat=feature_size, n_channel=seq_length, n_layer_enc=n_layer_enc, n_layer_dec=n_layer_dec,
+        self.model = WaveletTransformer(n_feat=feature_size, n_channel=seq_length, n_layer_enc=n_layer_enc, n_layer_dec=n_layer_dec,
                                  n_heads=n_heads, attn_pdrop=attn_pd, resid_pdrop=resid_pd, mlp_hidden_times=mlp_hidden_times,
                                  max_len=seq_length, n_embd=d_model, conv_params=[kernel_size, padding_size], **kwargs)
 
