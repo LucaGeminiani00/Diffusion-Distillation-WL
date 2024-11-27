@@ -6,9 +6,17 @@
   <img src="Assets/kernel.png" alt="Image 3" width="200">
 </div>
 
-[![Release](https://img.shields.io/github/v/release/your-username/your-repo)](https://github.com/your-username/your-repo/releases)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/your-username/your-repo/build.yml)](https://github.com/your-username/your-repo/actions)
-[![License](https://img.shields.io/github/license/your-username/your-repo)](LICENSE)
+<div align="center">
+  <a href="https://github.com/your-username/your-repo/releases">
+    <img src="https://img.shields.io/github/v/release/your-username/your-repo" alt="Release">
+  </a>
+  <a href="https://github.com/your-username/your-repo/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/your-username/your-repo/build.yml" alt="Build Status">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/github/license/your-username/your-repo" alt="License">
+  </a>
+</div>
 
 ## Project Description 
 
