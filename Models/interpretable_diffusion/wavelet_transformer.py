@@ -52,7 +52,7 @@ class Periodic(nn.Module):
     def __init__(self):
         super(Periodic, self).__init__()
 
-        self.dwt = DWT1DForward(wave='db6', J=3)
+        self.dwt = DWT1DForward(wave='db6', J=4)
         self.idwt = DWT1DInverse(wave='db6')
         
     def forward(self, x):
