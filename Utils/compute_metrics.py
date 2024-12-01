@@ -47,8 +47,8 @@ def compute_metrics(ori_data, fake_data, train=False):
     correl_score = corr.compute(fake)
     
     metrics = {
-        "FID_score": FID_score,
-        "correlational_score": correl_score,
+        "FID score": FID_score,
+        "Correlational score": correl_score,
         "Pearson's correlation": pearson_correlation
     }
     
@@ -56,8 +56,8 @@ def compute_metrics(ori_data, fake_data, train=False):
         discriminative = discriminative_score(ori_data, fake_data)
         predictive_score_value = predictive_score(ori_data, fake_data)
         metrics.update({
-            "discriminative_score": discriminative,
-            "predictive_score": predictive_score_value
+            "Discriminative score": discriminative,
+            "Predictive score": predictive_score_value
         })
     
     # Print metrics
