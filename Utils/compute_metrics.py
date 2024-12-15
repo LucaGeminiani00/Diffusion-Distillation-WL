@@ -30,6 +30,7 @@ def compute_metrics(ori_data, fake_data, predictors=None):
     """
     Compute metrics for original and fake data.
     """
+  
     pearson_correlation = pearson_corr(ori_data, fake_data)
     
     ori = torch.from_numpy(ori_data)
