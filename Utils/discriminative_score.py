@@ -31,73 +31,79 @@ class DiscriminatorModel(nn.Module):
         output = self.fc(unpacked_out)
         return output  
 
-def discriminative_score(ori_data, generated_data):
-    
-    no, seq_len, dim = np.asarray(ori_data).shape    
-    
-    ori_time, ori_max_seq_len = extract_time(ori_data)
-    generated_time, generated_max_seq_len = extract_time(generated_data)
-    
-    hidden_dim = int(dim / 2)
-    iterations = 2000
-    batch_size = 128
-    
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
-    model = DiscriminatorModel(input_dim=dim, hidden_dim=hidden_dim).to(device)
-    criterion = nn.BCEWithLogitsLoss()  
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
-    
-    train_x, train_x_hat, test_x, test_x_hat, train_t, train_t_hat, test_t, test_t_hat = \
-        train_test_divide(ori_data, generated_data, ori_time, generated_time)
+class DiscriminativeScoreModel():
+    def __init__(self, ori_data, generated_data, iterations=2000, batch_size=128, lr=0.001, device=None):
+        self.ori_data = ori_data
+        self.generated_data = generated_data
+        self.iterations = iterations
+        self.batch_size = batch_size
+        self.lr = lr
+        self.device = device if device else torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.is_trained = False 
 
-    for itt in tqdm(range(iterations), desc='training discriminator', total=iterations):
-          
-        X_mb, T_mb = batch_generator(train_x, train_t, batch_size)
-        X_hat_mb, T_hat_mb = batch_generator(train_x_hat, train_t_hat, batch_size)
-       
-        X_mb = torch.stack([torch.tensor(x, dtype=torch.float32).to(device) for x in X_mb])
-        T_mb = torch.tensor(T_mb, dtype=torch.long).to(device)
-        X_hat_mb = torch.stack([torch.tensor(x, dtype=torch.float32).to(device) for x in X_hat_mb])
-        T_hat_mb = torch.tensor(T_hat_mb, dtype=torch.long).to(device)
-
-        optimizer.zero_grad()
-        y_logit_real = model(X_mb, T_mb.cpu())
-        y_logit_fake = model(X_hat_mb, T_hat_mb.cpu())
+        self.no, self.seq_len, self.dim = np.asarray(self.ori_data).shape
+        self.ori_time, self.ori_max_seq_len = extract_time(self.ori_data)
+        self.generated_time, self.generated_max_seq_len = extract_time(self.generated_data)
         
-        labels_real = torch.ones_like(y_logit_real)
-        labels_fake = torch.zeros_like(y_logit_fake)
+        self.hidden_dim = int(self.dim / 2)
+        
+        self.train_x, self.train_x_hat, self.test_x, self.test_x_hat, self.train_t, self.train_t_hat, self.test_t, self.test_t_hat = \
+            train_test_divide(self.ori_data, self.generated_data, self.ori_time, self.generated_time)
+
+        self.model = DiscriminatorModel(input_dim=self.dim, hidden_dim=self.hidden_dim).to(self.device)
+        self.criterion = nn.BCEWithLogitsLoss()
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
+        
+    def train(self):
+        for itt in tqdm(range(self.iterations), desc='Training Discriminator', total=self.iterations):
+            X_mb, T_mb = batch_generator(self.train_x, self.train_t, self.batch_size)
+            X_hat_mb, T_hat_mb = batch_generator(self.train_x_hat, self.train_t_hat, self.batch_size)
+            
+            X_mb = torch.stack([torch.tensor(x, dtype=torch.float32).to(self.device) for x in X_mb])
+            T_mb = torch.tensor(T_mb, dtype=torch.long).to(self.device)
+            X_hat_mb = torch.stack([torch.tensor(x, dtype=torch.float32).to(self.device) for x in X_hat_mb])
+            T_hat_mb = torch.tensor(T_hat_mb, dtype=torch.long).to(self.device)
+
+            self.optimizer.zero_grad()
+
+            y_logit_real = self.model(X_mb, T_mb.cpu())
+            y_logit_fake = self.model(X_hat_mb, T_hat_mb.cpu())
+
+            labels_real = torch.ones_like(y_logit_real)
+            labels_fake = torch.zeros_like(y_logit_fake)
+
+            d_loss_real = self.criterion(y_logit_real, labels_real)
+            d_loss_fake = self.criterion(y_logit_fake, labels_fake)
+            d_loss = d_loss_real + d_loss_fake
+
+            d_loss.backward()
+            self.optimizer.step()
+
+        self.is_trained = True 
     
-        d_loss_real = criterion(y_logit_real, labels_real)
-        d_loss_fake = criterion(y_logit_fake, labels_fake)
-        d_loss = d_loss_real + d_loss_fake
-     
-        d_loss.backward()
-        optimizer.step()
-     
-    test_x = torch.stack([torch.tensor(x, dtype=torch.float32).to(device) for x in test_x])
-    test_t = torch.tensor(test_t, dtype=torch.long).to(device)
-    test_x_hat = torch.stack([torch.tensor(x, dtype=torch.float32).to(device) for x in test_x_hat])
-    test_t_hat = torch.tensor(test_t_hat, dtype=torch.long).to(device)
+    def compute_dis(self, fake_data):
+        if not self.is_trained: 
+            raise("Discriminator Model must first be trained")
+        test_x = torch.stack([torch.tensor(x, dtype=torch.float32).to(self.device) for x in self.test_x])
+        test_t = torch.tensor(self.test_t, dtype=torch.long).to(self.device)
+        
+        fake_data = torch.stack([torch.tensor(x, dtype=torch.float32).to(self.device) for x in fake_data])
+        fake_t = torch.tensor(self.test_t_hat, dtype=torch.long).to(self.device)  
 
-    with torch.no_grad():
-        y_pred_real_curr = torch.sigmoid(model(test_x, test_t.cpu()))
-        y_pred_fake_curr = torch.sigmoid(model(test_x_hat, test_t_hat.cpu()))
+        with torch.no_grad():
+            y_pred_real_curr = torch.sigmoid(self.model(test_x, test_t.cpu()))
+            y_pred_fake_curr = torch.sigmoid(self.model(fake_data, fake_t.cpu()))
 
-    y_pred_real_curr_bin = (y_pred_real_curr > 0.5).int()  
-    y_pred_fake_curr_bin = (y_pred_fake_curr > 0.5).int()  
+        y_pred_real_curr_bin = (y_pred_real_curr > 0.5).int()
+        y_pred_fake_curr_bin = (y_pred_fake_curr > 0.5).int()
 
-    y_pred_real_curr_bin = y_pred_real_curr_bin.view(-1)  
-    y_pred_fake_curr_bin = y_pred_fake_curr_bin.view(-1)  
+        y_pred_real_curr_bin = y_pred_real_curr_bin.view(-1)
+        y_pred_fake_curr_bin = y_pred_fake_curr_bin.view(-1)
 
-    y_pred_final = torch.cat((y_pred_real_curr_bin, y_pred_fake_curr_bin), dim=0)
-    y_label_final = torch.cat((torch.ones(y_pred_real_curr_bin.size(0)), torch.zeros(y_pred_fake_curr_bin.size(0))), dim=0)
+        y_pred_final = torch.cat((y_pred_real_curr_bin, y_pred_fake_curr_bin), dim=0)
+        y_label_final = torch.cat((torch.ones(y_pred_real_curr_bin.size(0)), torch.zeros(y_pred_fake_curr_bin.size(0))), dim=0)
 
+        acc = accuracy_score(y_label_final.cpu(), y_pred_final.cpu())
 
-    acc = accuracy_score(y_label_final.cpu(), y_pred_final.cpu())
-    #fake_acc = accuracy_score(np.zeros(len(y_pred_fake_curr_bin)).cpu(), y_pred_fake_curr_bin.cpu())
-    #real_acc = accuracy_score(np.ones(len(y_pred_real_curr_bin)).cpu(), y_pred_real_curr_bin.cpu())
-
-    discriminative_score = np.abs(0.5 - acc)
-
-    return discriminative_score
+        discriminative_score = np.abs(0.5 - acc)
+        return discriminative_score

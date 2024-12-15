@@ -1,10 +1,10 @@
 import numpy as np
 import torch
 
-from Utils.context_fid import Context_FID
+from Utils.context_fid import ContextFIDCalculator
 from Utils.correlational_score import *
-from Utils.discriminative_score import discriminative_score
-from Utils.predictive_score import predictive_score
+from Utils.discriminative_score import DiscriminativeScoreModel
+from Utils.predictive_score import PredictiveScoreModel
 
 
 def pearson_corr(actual, predic):
@@ -26,19 +26,11 @@ def pearson_corr(actual, predic):
     return abs(np.mean(correlation))
 
 
-def compute_metrics(ori_data, fake_data, train=False):
+def compute_metrics(ori_data, fake_data, predictors=None):
     """
     Compute metrics for original and fake data.
-
-    Args:
-        ori_data (numpy.ndarray): Original data.
-        fake_data (numpy.ndarray): Fake/generated data.
-        train (bool): If True, compute all metrics including those requiring training
-
-    Returns:
-        dict: A dictionary containing the computed metrics.
     """
-    FID_score = Context_FID(ori_data, fake_data)
+  
     pearson_correlation = pearson_corr(ori_data, fake_data)
     
     ori = torch.from_numpy(ori_data)
@@ -47,21 +39,35 @@ def compute_metrics(ori_data, fake_data, train=False):
     correl_score = corr.compute(fake)
     
     metrics = {
-        "FID score": FID_score,
         "Correlational score": correl_score,
         "Pearson's correlation": pearson_correlation
     }
     
-    if train:
-        discriminative = discriminative_score(ori_data, fake_data)
-        predictive_score_value = predictive_score(ori_data, fake_data)
+    if predictors is not None:
+        fid, dis, pred = predictors[:3] 
+        FID_score = fid.compute_fid(fake_data)
+        discriminative = dis.compute_dis(fake_data)
+        predictive_score_value = pred.compute_pred(fake_data)
         metrics.update({
+            "FID score": FID_score,
             "Discriminative score": discriminative,
             "Predictive score": predictive_score_value
         })
-    
-    # Print metrics
+
     for key, value in metrics.items():
         print(f"{key}: {value}")
     
     return metrics
+
+def train_metrics(ori_data,fake_data): 
+    fid = ContextFIDCalculator(ori_data)
+    fid.train() 
+
+    dis = DiscriminativeScoreModel(ori_data, fake_data)
+    dis.train()
+
+    pred = PredictiveScoreModel(ori_data, fake_data)
+    pred.train()
+
+    return [fid, dis, pred]
+

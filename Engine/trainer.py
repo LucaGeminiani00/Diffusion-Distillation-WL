@@ -39,7 +39,7 @@ def full_distill(teacher, configs, dl_info, iters):
             student = Engine(config=next_config, args=teacher.args, model=next_model, dataloader=dl_info)
             student.model.load_state_dict(teacher_keys)
             student.model.teacher = teacher
-            student.distill()
+            student.distill(stud=count)
 
             students[f"student{count}"] = student
         else:
@@ -50,7 +50,7 @@ def full_distill(teacher, configs, dl_info, iters):
             student = Engine(config=next_config, args=teacher.args, model=next_model, dataloader=dl_info)
             student.model.load_state_dict(teacher_keys)
             student.model.teacher = students[f"student{count - 1}"]
-            student.distill()
+            student.distill(stud=count)
 
             students[f"student{count}"] = student
 
@@ -91,7 +91,7 @@ class Engine(object):
             self.logger.log_info(str(get_model_parameters_info(self.model)))
         self.log_frequency = 100
 
-    def save(self, milestone, distill=False, verbose=False):
+    def save(self, milestone, stud=0, distill=False, verbose=False):
         if self.logger is not None and verbose:
             self.logger.log_info('Save current model to {}'.format(str(self.results_folder / f'checkpoint-{milestone}.pt')))
         data = {
@@ -101,7 +101,7 @@ class Engine(object):
             'opt': self.opt.state_dict(),
         }
         if distill: 
-            torch.save(data, str(self.results_folder / f'distill-final-{milestone}.pt'))
+            torch.save(data, str(self.results_folder / f'distill-{stud}-final-{milestone}.pt'))
         else: 
             torch.save(data, str(self.results_folder / f'checkpoint-{milestone}.pt'))
 
@@ -149,13 +149,6 @@ class Engine(object):
                         self.save(self.milestone)
                     
                     if self.logger is not None and self.step % self.log_frequency == 0:
-                        # info = '{}: train'.format(self.args.name)
-                        # info = info + ': Epoch {}/{}'.format(self.step, self.train_num_steps)
-                        # info += ' ||'
-                        # info += '' if loss_f == 'none' else ' Fourier Loss: {:.4f}'.format(loss_f.item())
-                        # info += '' if loss_r == 'none' else ' Reglarization: {:.4f}'.format(loss_r.item())
-                        # info += ' | Total Loss: {:.6f}'.format(total_loss)
-                        # self.logger.log_info(info)
                         self.logger.add_scalar(tag='train/loss', scalar_value=total_loss, global_step=self.step)
 
                 pbar.update(1)
@@ -164,7 +157,7 @@ class Engine(object):
         if self.logger is not None:
             self.logger.log_info('Training done, time: {:.2f}'.format(time.time() - tic))
 
-    def distill(self):          #Performs one step of progressive distillation 
+    def distill(self, stud):          #Performs one step of progressive distillation 
         device = self.device
         step = 0
         if self.logger is not None:
@@ -181,7 +174,7 @@ class Engine(object):
                     loss.backward()
                     total_loss += loss.item()
 
-                pbar.set_description(f'distillation_loss: {total_loss:.6f}')
+                pbar.set_description(f'distillation loss({stud}): {total_loss:.6f}')
 
                 clip_grad_norm_(self.model.parameters(), 1.0)
                 self.opt.step()
@@ -194,21 +187,14 @@ class Engine(object):
                 with torch.no_grad():
                     if self.step % self.progr_numsteps == 0:
                         self.milestone += 1
-                        self.save(self.milestone, distill=True)
+                        self.save(self.milestone, stud=stud, distill=True)
                     
                     if self.logger is not None and self.step % self.log_frequency == 0:
-                        # info = '{}: train'.format(self.args.name)
-                        # info = info + ': Epoch {}/{}'.format(self.step, self.train_num_steps)
-                        # info += ' ||'
-                        # info += '' if loss_f == 'none' else ' Fourier Loss: {:.4f}'.format(loss_f.item())
-                        # info += '' if loss_r == 'none' else ' Regularization: {:.4f}'.format(loss_r.item())
-                        # info += ' | Total Loss: {:.6f}'.format(total_loss)
-                        # self.logger.log_info(info)
                         self.logger.add_scalar(tag='train/loss', scalar_value=total_loss, global_step=self.step)
 
                 pbar.update(1)
 
-        print('training complete')
+        print(f'training of student({stud}) complete')
         if self.logger is not None:
             self.logger.log_info('Training done, time: {:.2f}'.format(time.time() - tic))
 

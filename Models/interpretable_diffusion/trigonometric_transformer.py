@@ -15,7 +15,7 @@ from Models.interpretable_diffusion.model_utils import (
 from torch import nn
 
 
-class TrendBlock(nn.Module):       #It's really all about this block for the trend component 
+class TrendBlock(nn.Module):       
     """
     Model trend of time series using the polynomial regressor.
     """
@@ -55,7 +55,7 @@ class MovingBlock(nn.Module):
         return x, trend_vals
 
 
-class FourierLayer(nn.Module):    #It's all about this block for the Fourier Layer 
+class FourierLayer(nn.Module):    
     """
     Model seasonality of time series using the inverse DFT.
     """
@@ -109,9 +109,9 @@ class SeasonBlock(nn.Module):
     """
     def __init__(self, in_dim, out_dim, factor=1):
         super(SeasonBlock, self).__init__()
-        season_poly = factor * min(32, int(out_dim // 2))     #In this case it is 12 
-        self.season = nn.Conv1d(in_channels=in_dim, out_channels=season_poly, kernel_size=1, padding=0) #returns 64,12,1024 (not 24~!)
-        fourier_space = torch.arange(0, out_dim, 1) / out_dim #24 elements 
+        season_poly = factor * min(32, int(out_dim // 2))     
+        self.season = nn.Conv1d(in_channels=in_dim, out_channels=season_poly, kernel_size=1, padding=0) 
+        fourier_space = torch.arange(0, out_dim, 1) / out_dim 
         p1, p2 = (season_poly // 2, season_poly // 2) if season_poly % 2 == 0 \
             else (season_poly // 2, season_poly // 2 + 1)  #p1 = 6  p2 = 6 
         s1 = torch.stack([torch.cos(2 * np.pi * p * fourier_space) for p in range(1, p1 + 1)], dim=0)
@@ -402,8 +402,8 @@ class Transformer(nn.Module):
         **kwargs
     ):
         super().__init__()
-        self.emb = Conv_MLP(n_feat, n_embd, resid_pdrop=resid_pdrop) #Input is n_features (6) outputs (1024) embedded dimensions
-        self.inverse = Conv_MLP(n_embd, n_feat, resid_pdrop=resid_pdrop) #Input is (1024) dimensions, outputs (6) features
+        self.emb = Conv_MLP(n_feat, n_embd, resid_pdrop=resid_pdrop) 
+        self.inverse = Conv_MLP(n_embd, n_feat, resid_pdrop=resid_pdrop) 
 
         if conv_params is None or conv_params[0] is None:
             if n_feat < 32 and n_channel < 64:
@@ -414,26 +414,25 @@ class Transformer(nn.Module):
             kernel_size, padding = conv_params
 
         self.combine_s = nn.Conv1d(n_embd, n_feat, kernel_size=kernel_size, stride=1, padding=padding,
-                                   padding_mode='circular', bias=False)  #Input is embedded Seasonality, output is (6) 
+                                   padding_mode='circular', bias=False)  
         self.combine_m = nn.Conv1d(n_layer_dec, 1, kernel_size=1, stride=1, padding=0,
-                                   padding_mode='circular', bias=False)  #Input is 6 and output is 6 
+                                   padding_mode='circular', bias=False)  
 
         self.encoder = Encoder(n_layer_enc, n_embd, n_heads, attn_pdrop, resid_pdrop, mlp_hidden_times, block_activate)
-        self.pos_enc = LearnablePositionalEncoding(n_embd, dropout=resid_pdrop, max_len=max_len) #input 1024, output 1024 
+        self.pos_enc = LearnablePositionalEncoding(n_embd, dropout=resid_pdrop, max_len=max_len) 
 
         self.decoder = Decoder(n_channel, n_feat, n_embd, n_heads, n_layer_dec, attn_pdrop, resid_pdrop, mlp_hidden_times,
                                block_activate, condition_dim=n_embd)
-        self.pos_dec = LearnablePositionalEncoding(n_embd, dropout=resid_pdrop, max_len=max_len) #input 1024, output 1024 
-
+        self.pos_dec = LearnablePositionalEncoding(n_embd, dropout=resid_pdrop, max_len=max_len) 
     def forward(self, input, t, padding_masks=None, return_res=False):
         emb = self.emb(input)                        
-        inp_enc = self.pos_enc(emb)   #This might be interesting to be changed; learned embedding structure 
+        inp_enc = self.pos_enc(emb)   
         enc_cond = self.encoder(inp_enc, t, padding_masks=padding_masks)   
 
-        inp_dec = self.pos_dec(emb) #This might be interesting to be changed; learned embedding structure
+        inp_dec = self.pos_dec(emb) 
         output, mean, trend, season = self.decoder(inp_dec, t, enc_cond, padding_masks=padding_masks)
 
-        res = self.inverse(output)   #Learning the noise of the model (Conv2LP)
+        res = self.inverse(output)   
         res_m = torch.mean(res, dim=1, keepdim=True)
         season_error = self.combine_s(season.transpose(1, 2)).transpose(1, 2) + res - res_m
         trend = self.combine_m(mean) + res_m + trend
