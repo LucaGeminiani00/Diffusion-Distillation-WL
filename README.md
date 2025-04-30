@@ -1,4 +1,4 @@
-# (WORK IN PROGRESS) Wavelet Diffusion and Progressive Distillation for Time Series synthesis 
+# Wavelet Diffusion and Progressive Distillation for Time Series synthesis 
 
 <div align="center">
   <img src="Assets/tsne.png" alt="Image 1" width="200">
