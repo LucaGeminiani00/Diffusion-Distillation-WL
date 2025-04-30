@@ -21,8 +21,9 @@
 
 ## Project Description 
 
-(THIS REPO IS STILL A WORK IN PROGRESS) This repository provides an extension of the Diffusion-TS model, proposed in https://github.com/Y-debug-sys/Diffusion-TS, by changing the underlying logic for learning the Seasonal and Trend components of the time series, exploiting the Wavelet Transform rather than the Fourier Transform. 
-It also provides an implementation of Progressive Distillation, extending it to the Time Series domain. 
+This repository is the main source code of my master of science thesis at Bocconi University, titled: "Diffusion Wavelet: Interpretable diffusion and Progressive Distillation for time series synthesis". It provides an extension of the Diffusion-TS model, proposed in https://github.com/Y-debug-sys/Diffusion-TS, by changing the underlying logic for learning the Seasonal and Trend components of the time series, exploiting the Wavelet Transform rather than the Fourier Transform. 
+It also provides an implementation of Progressive Distillation, extending it to the Time Series domain.
+The structure of the repository is to be refined, but it is working already, and the colab notebook provided can be quickly exploited to train the diffusion models on GPUs. 
 
 ## Progressive Distillation 
 Distillation of the originally trained model teaches a student to sample with half the Diffusion steps of the teacher, rendering the original network into a narrower, faster one. The training procedure follows the one originally proposed in "Progressive Distillation for Fast Sampling of Diffusion Models", by Tim Salimans and Jonathan Ho https://openreview.net/forum?id=TIdIXIpzhoI . 
