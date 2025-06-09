@@ -163,7 +163,7 @@ class Engine(object):
         if self.logger is not None:
             self.logger.log_info('Training done, time: {:.2f}'.format(time.time() - tic))
 
-    def distill(self, stud):          #Performs one step of progressive distillation 
+    def distill(self, stud):           
         device = self.device
         step = 0
         if self.logger is not None:
