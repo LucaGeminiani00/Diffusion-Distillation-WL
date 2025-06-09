@@ -56,6 +56,9 @@ class Diffusion_FS(nn.Module):
         super(Diffusion_FS, self).__init__()
 
         self.teacher = None   
+        self.oriteacher = None
+        self.orinumtimesteps = None 
+        self.count = 0 
         self.eta, self.use_ff = eta, use_ff
         self.seq_length = seq_length
         self.feature_size = feature_size
@@ -245,24 +248,27 @@ class Diffusion_FS(nn.Module):
         x_student = self.output(zt, t // ratio , padding_masks = None) 
         return x_teacher, x_student 
    
-    def distill_target(self, x_start , t, teacher, noise = None):  
+    def distill_target(self, x_start , t_s, t, teacher, noise = None):  
         if teacher is None: 
             raise ValueError("Teacher is not defined")
         
         noise = default(noise, lambda: torch.randn_like(x_start))
-        zt = teacher.model.q_sample(x_start=x_start, t=t, noise=noise)
-        x_tilda  = teacher.model.output(zt, t , padding_masks = None)  
+        zt = self.oriteacher.model.q_sample(x_start=x_start, t=t, noise=noise)
+        x_tilda  = teacher.model.output(zt, t_s , padding_masks = None)  
         
         return x_tilda, zt
 
     def _distill_loss(self, x_start, t, target=None, padding_masks=None): 
-        if self.target is None: 
-            t_s = t // 2  
-        else: 
-            ratio = self.teacher.model.num_timesteps // self.target
-            t_s = t // ratio
-
-        target, zt = self.distill_target(x_start = x_start, t=t, teacher = self.teacher)
+        
+        count = self.count
+        t_s = t // (2**(count + 1)) 
+        t_s[t_s == self.num_timesteps] -= 1 
+        if count == 0: 
+            t_s_old = t 
+        else:  
+            t_s_old = t // (2**count)
+        
+        target, zt = self.distill_target(x_start = x_start, t_s=t_s_old, t=t, teacher = self.teacher)
         student_out = self.output(zt, t_s, padding_masks) 
 
         distill_loss = self.loss_fn(student_out, target, reduction='none') 
@@ -283,7 +289,10 @@ class Diffusion_FS(nn.Module):
     def forward(self, x, **kwargs):
         b, c, n, device, feature_size, = *x.shape, x.device, self.feature_size
         assert n == feature_size, f'number of variable must be {feature_size}'
-        t = 2* torch.randint(0, self.num_timesteps, (b,), device=device).long()  
+        if self.oriteacher is None: 
+            t = 2* torch.randint(0, self.num_timesteps, (b,), device=device).long()  
+        else: 
+            t = torch.randint(0, self.orinumtimesteps, (b,), device=device).long()  
         return self._distill_loss(x_start=x, t=t, **kwargs)
 
 

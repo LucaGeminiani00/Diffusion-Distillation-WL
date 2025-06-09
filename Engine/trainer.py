@@ -39,6 +39,9 @@ def full_distill(teacher, configs, dl_info, iters):
             student = Engine(config=next_config, args=teacher.args, model=next_model, dataloader=dl_info)
             student.model.load_state_dict(teacher_keys)
             student.model.teacher = teacher
+            student.model.oriteacher = teacher
+            student.model.orinumtimesteps = numsteps 
+            student.model.count = count 
             student.distill(stud=count)
 
             students[f"student{count}"] = student
@@ -50,6 +53,9 @@ def full_distill(teacher, configs, dl_info, iters):
             student = Engine(config=next_config, args=teacher.args, model=next_model, dataloader=dl_info)
             student.model.load_state_dict(teacher_keys)
             student.model.teacher = students[f"student{count - 1}"]
+            student.model.oriteacher = teacher
+            student.model.orinumtimesteps = numsteps
+            student.model.count = count 
             student.distill(stud=count)
 
             students[f"student{count}"] = student
@@ -163,7 +169,8 @@ class Engine(object):
         if self.logger is not None:
             tic = time.time()
             self.logger.log_info('{}: start training student...'.format(self.args.name), check_primary=False)
-
+        if stud >= 3: 
+            self.progr_numsteps = self.progr_numsteps * 2
         with tqdm(initial=step, total=self.progr_numsteps) as pbar:
             while step < self.progr_numsteps:
                 total_loss = 0.
@@ -213,3 +220,19 @@ class Engine(object):
         if self.logger is not None:
             self.logger.log_info('Sampling done, time: {:.2f}'.format(time.time() - tic))
         return samples
+    
+    def exact_sample(self,num, size_every, shape=None, forward_data=None, specific=None): #added
+        if self.logger is not None:
+            tic = time.time()
+            self.logger.log_info('Begin to sample...')
+        samples = np.empty([0, shape[0], shape[1]])
+        num_cycle = int(num // size_every) + 1
+
+        for _ in range(num_cycle):
+            sample, imgs = self.ema.ema_model.generate_mts(batch_size=size_every, forward_data=forward_data, specific=specific)     
+            samples = np.row_stack([samples, sample.detach().cpu().numpy()])
+            torch.cuda.empty_cache()
+
+        if self.logger is not None:
+            self.logger.log_info('Sampling done, time: {:.2f}'.format(time.time() - tic))
+        return samples, imgs

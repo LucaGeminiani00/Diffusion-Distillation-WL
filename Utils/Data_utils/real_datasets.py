@@ -9,6 +9,42 @@ from torch.utils.data import Dataset
 from Models.interpretable_diffusion.model_utils import normalize_to_neg_one_to_one, unnormalize_to_zero_to_one
 from Utils.masking_utils import noise_mask
 
+def getids(data, ratio=1, seed=123): #add
+    size = data.shape[0]
+    st0 = np.random.get_state()
+    np.random.seed(seed)
+
+    regular_train_num = int(np.ceil(size * ratio))
+    id_rdm = np.random.permutation(size)
+
+    regular_train_id = id_rdm[:regular_train_num]
+    irregular_train_id = id_rdm[regular_train_num:]
+
+    np.random.set_state(st0)
+
+    if ratio==1: 
+        return regular_train_id 
+    else: 
+        return regular_train_id, irregular_train_id
+
+def reconstruct_data(regular_data, regular_train_id, irregular_data=None, irregular_train_id=None): #add 
+    if irregular_data is not None: 
+        size = len(regular_data) + len(irregular_data)
+     
+        data_shape = regular_data.shape[1:]  
+        data_reconstructed = np.zeros((size, *data_shape))  
+
+        data_reconstructed[regular_train_id] = regular_data
+        data_reconstructed[irregular_train_id] = irregular_data
+    else: 
+        size = len(regular_data) 
+
+        data_shape = regular_data.shape[1:]  
+        data_reconstructed = np.zeros((size, *data_shape))  
+
+        data_reconstructed[regular_train_id] = regular_data
+
+    return data_reconstructed
 
 class CustomDataset(Dataset):
     def __init__(

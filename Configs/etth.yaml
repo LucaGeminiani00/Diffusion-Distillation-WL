@@ -2,8 +2,8 @@ model:
   target: Models.interpretable_diffusion.gaussian_diffusion.Diffusion_FS
   params:
     seq_length: 24
-    feature_size: 6
-    n_layer_enc: 2
+    feature_size: 7
+    n_layer_enc: 3
     n_layer_dec: 2
     d_model: 64  # 4 X 16
     timesteps: 500
@@ -19,11 +19,11 @@ model:
 
 solver:
   base_lr: 1.0e-5
-  max_epochs: 10000 #Not original 
-  progr_epochs: 550 #Not original
-  results_folder: ./Checkpoints_stock
+  max_epochs: 18000
+  progr_epochs: 350
+  results_folder: ./Checkpoints_etth
   gradient_accumulate_every: 2
-  save_cycle: 1000  # max_epochs // 10
+  save_cycle: 1800  # max_epochs // 10
   ema:
     decay: 0.995
     update_interval: 10
@@ -32,7 +32,7 @@ solver:
     target: Engine.scheduler.ReduceLROnPlateauWithWarmup
     params:
       factor: 0.5
-      patience: 2000
+      patience: 4000
       min_lr: 1.0e-5
       threshold: 1.0e-1
       threshold_mode: rel
@@ -42,11 +42,11 @@ solver:
 
 dataloader:
   train_dataset:
-    target: Utils.Data_utils.real_datasets.CustomDataset
+    target:  Utils.Data_utils.real_datasets.CustomDataset
     params:
-      name: stock
+      name: etth
       proportion: 1.0  # Set to rate < 1 if training conditional generation
-      data_root: ./Datasets/datasets/stock_data.csv
+      data_root: ./Datasets/datasets/ETTh.csv
       window: 24  # seq_length
       save2npy: True
       neg_one_to_one: True
@@ -56,9 +56,9 @@ dataloader:
   test_dataset:
     target: Utils.Data_utils.real_datasets.CustomDataset
     params:
-      name: stock
+      name: etth
       proportion: 0.9  # rate
-      data_root: ./Datasets/datasets/stock_data.csv
+      data_root: ./Data/datasets/ETTh.csv
       window: 24  # seq_length
       save2npy: True
       neg_one_to_one: True
@@ -70,6 +70,6 @@ dataloader:
     step_size: 5.0e-2
     sampling_steps: 200
 
-  batch_size: 64
+  batch_size: 128
   sample_size: 256
   shuffle: True

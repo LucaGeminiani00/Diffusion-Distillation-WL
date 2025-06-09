@@ -8,10 +8,34 @@ from Models.interpretable_diffusion.model_utils import (
     GELU2,
     AdaLayerNorm,
     Conv_MLP,
+    Transpose,
     LearnablePositionalEncoding,
 )
 from pytorch_wavelets import DWT1DForward, DWT1DInverse
 
+class TrendBlock(nn.Module):
+    """
+    Model trend of time series using the polynomial regressor.
+    """
+    def __init__(self, in_dim, out_dim, in_feat, out_feat, act):
+        super(TrendBlock, self).__init__()
+        trend_poly = 3
+        self.trend = nn.Sequential(
+            nn.Conv1d(in_channels=in_dim, out_channels=trend_poly, kernel_size=3, padding=1),
+            act,
+            Transpose(shape=(1, 2)),
+            nn.Conv1d(in_feat, out_feat, 3, stride=1, padding=1)
+        )
+
+        lin_space = torch.arange(1, out_dim + 1, 1) / (out_dim + 1)
+        self.poly_space = torch.stack([lin_space ** float(p + 1) for p in range(trend_poly)], dim=0)
+
+    def forward(self, input):
+        b, c, h = input.shape
+        x = self.trend(input).transpose(1, 2)
+        trend_vals = torch.matmul(x.transpose(1, 2), self.poly_space.to(x.device))
+        trend_vals = trend_vals.transpose(1, 2)
+        return trend_vals
 
 class MLP(nn.Module):     #Adjusted MLP Model 
     def __init__(self,input_dim,output_dim, resid_pdrop=0.):
@@ -248,7 +272,7 @@ class DecoderBlock(nn.Module):
         assert activate in ['GELU', 'GELU2']
         act = nn.GELU() if activate == 'GELU' else GELU2()
 
-        self.trend = NonPeriodic(n_embd, n_feat)
+        self.trend = TrendBlock(n_channel, n_channel, n_embd, n_feat, act=act)
     
         self.seasonal = Periodic()
 

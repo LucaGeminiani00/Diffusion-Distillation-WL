@@ -114,14 +114,9 @@ def visualization(ori_data, generated_data, analysis, compare=3000):
         # Plotting
         f, ax = plt.subplots(1)
         plt.scatter(pca_results[:, 0], pca_results[:, 1],
-                    c=colors[:anal_sample_no], alpha=0.2, label="Original")
+                    c=colors[:anal_sample_no], alpha=0.2)
         plt.scatter(pca_hat_results[:, 0], pca_hat_results[:, 1],
-                    c=colors[anal_sample_no:], alpha=0.2, label="Synthetic")
-
-        ax.legend()
-        plt.title('PCA plot')
-        plt.xlabel('x-pca')
-        plt.ylabel('y_pca')
+                    c=colors[anal_sample_no:], alpha=0.2)
         plt.show()
 
     elif analysis == 'tsne':
@@ -137,15 +132,10 @@ def visualization(ori_data, generated_data, analysis, compare=3000):
         f, ax = plt.subplots(1)
 
         plt.scatter(tsne_results[:anal_sample_no, 0], tsne_results[:anal_sample_no, 1],
-                    c=colors[:anal_sample_no], alpha=0.2, label="Original")
+                    c=colors[:anal_sample_no], alpha=0.2)
         plt.scatter(tsne_results[anal_sample_no:, 0], tsne_results[anal_sample_no:, 1],
-                    c=colors[anal_sample_no:], alpha=0.2, label="Synthetic")
+                    c=colors[anal_sample_no:], alpha=0.2)
 
-        ax.legend()
-
-        plt.title('t-SNE plot')
-        plt.xlabel('x-tsne')
-        plt.ylabel('y_tsne')
         plt.show()
 
     elif analysis == 'kernel':
@@ -154,15 +144,9 @@ def visualization(ori_data, generated_data, analysis, compare=3000):
         # colors = ["red" for i in range(anal_sample_no)] + ["blue" for i in range(anal_sample_no)]
 
         f, ax = plt.subplots(1)
-        sns.distplot(prep_data, hist=False, kde=True, kde_kws={'linewidth': 5}, label='Original', color="red")
-        sns.distplot(prep_data_hat, hist=False, kde=True, kde_kws={'linewidth': 5, 'linestyle':'--'}, label='Synthetic', color="blue")
+        sns.distplot(prep_data, hist=False, kde=True, kde_kws={'linewidth': 5}, color="red")
+        sns.distplot(prep_data_hat, hist=False, kde=True, kde_kws={'linewidth': 5, 'linestyle':'--'}, color="blue")
         # Plot formatting
-
-        # plt.legend(prop={'size': 22})
-        plt.legend()
-        plt.xlabel('Data Value')
-        plt.ylabel('Data Density Estimate')
-        # plt.rcParams['pdf.fonttype'] = 42
 
         # plt.savefig(str(args.save_dir)+"/"+args.model1+"_histo.png", dpi=100,bbox_inches='tight')
         # plt.ylim((0, 12))
