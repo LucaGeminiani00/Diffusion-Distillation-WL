@@ -128,10 +128,10 @@ class SeasonBlock(nn.Module):
 
 class FullAttention(nn.Module):
     def __init__(self,
-                 n_embd, # the embed dim
-                 n_head, # the number of heads
-                 attn_pdrop=0.1, # attention dropout prob
-                 resid_pdrop=0.1, # residual attention dropout prob
+                 n_embd, 
+                 n_head, 
+                 attn_pdrop=0.1, 
+                 resid_pdrop=0.1, 
     ):
         super().__init__()
         assert n_embd % n_head == 0
@@ -239,7 +239,7 @@ class EncoderBlock(nn.Module):
             )
         
     def forward(self, x, timestep, mask=None, label_emb=None):
-        a, att = self.attn(self.ln1(x, timestep, label_emb), mask=mask) #Full attention #a = ([64, 24, 1024]) #att = [64, 24, 24]
+        a, att = self.attn(self.ln1(x, timestep, label_emb), mask=mask)
         x = x + a
         x = x + self.mlp(self.ln2(x))   # only one really use encoder_output
         return x, att

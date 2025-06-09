@@ -10,7 +10,7 @@ from torch.optim import Adam
 from torch.utils import data as D
 
 
-##Class used when utilizing Wasserstein Distillation
+##Class used when utilizing distillation based on W-GAN
 class Critic(nn.Module):
     def __init__(
         self,

@@ -57,7 +57,7 @@ class MLP(nn.Module):     #Adjusted MLP Model
         return x
 
 
-class NonPeriodic(nn.Module):  #Already working out well 
+class NonPeriodic(nn.Module):  
     def __init__(self, input_len, output_len):
         super(NonPeriodic,self).__init__()
 

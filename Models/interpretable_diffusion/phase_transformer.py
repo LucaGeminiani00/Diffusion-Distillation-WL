@@ -32,7 +32,7 @@ class MLP(nn.Module):     #Adjusted MLP Model
         return x
 
 
-class NonPeriodic(nn.Module):  #Already working out well 
+class NonPeriodic(nn.Module):  
     def __init__(self, input_len, output_len):
         super(NonPeriodic,self).__init__()
 
@@ -198,9 +198,9 @@ class EncoderBlock(nn.Module):
             )
         
     def forward(self, x, timestep, mask=None, label_emb=None):
-        a, att = self.attn(self.ln1(x, timestep, label_emb), mask=mask) #Full attention #a = ([64, 24, 1024]) #att = [64, 24, 24]
+        a, att = self.attn(self.ln1(x, timestep, label_emb), mask=mask) 
         x = x + a
-        x = x + self.mlp(self.ln2(x))   # only one really use encoder_output
+        x = x + self.mlp(self.ln2(x))  
         return x, att
 
 

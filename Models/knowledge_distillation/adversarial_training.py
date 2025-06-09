@@ -1,12 +1,9 @@
-######ADVERSARIAL TRAINING TO ACHIEVE ONE-STEP MODEL
-#WASSERSTAIN GAN '
+#Attempt to use adversarial training to achieve 1-step wasserstein GAN
 
 import copy
 
 import torch.nn.functional as F
 from Models.knowledge_distillation.critic import Critic
-
-###WASSERSTEIN APPROACH 
 from torch.nn.utils import clip_grad_norm_
 from torch.optim import Adam
 from tqdm.auto import tqdm
@@ -31,7 +28,7 @@ def train(student, critic):
         while step < student.progr_numsteps:
             WD_train, n_batches, loss = 0, 0, 0
             for _ in range(student.gradient_accumulate_every):
-                data = next(student.dl).to(device) # get the data
+                data = next(student.dl).to(device)
                 generator_update = step % critic_iter == 0
                 if step == 0:
                   generator_update = False
@@ -75,9 +72,8 @@ def train(student, critic):
         student.logger.log_info('Training done, time: {:.2f}'.format(time.time() - tic))
 
 
-####BUILD AN ALTERNATIVE MODEL WHERE YOU TRAIN THE DECODER TO TRANSFORM DATA FROM THE TEACHER INTO AN OUTPUT
+##Train a separate model that learns sampling in a single pass
 
-#SAMPLING ONE STEP
 def one_sample(one_model, num, size_every, shape=[24, 6]):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     one_model.to(device)
@@ -92,7 +88,7 @@ def one_sample(one_model, num, size_every, shape=[24, 6]):
 
     return samples
 
-#SAMPLING ONE STEP (TRANSFORMER MODEL)
+#Sampling one step (transformer model)
 def one_sample2(one_model, num, size_every, shape=[24, 6]):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     one_model.to(device)
@@ -110,13 +106,3 @@ def one_sample2(one_model, num, size_every, shape=[24, 6]):
         torch.cuda.empty_cache()
 
     return samples
-
-# fake_data = one_sample(one_model, num=len(dataset), size_every = 64)
-# if dataset.auto_norm:
-#     fake_data = unnormalize_to_zero_to_one(fake_data)
-#     np.save(os.path.join(args.save_dir, f'ddpm_fake_stock.npy'), fake_data)
-
-# fake_data = one_sample2(one_model=mdl, num=len(dataset), size_every = 64)
-# if dataset.auto_norm:
-#     fake_data = unnormalize_to_zero_to_one(fake_data)
-#     np.save(os.path.join(args.save_dir, f'ddpm_fake_stock.npy'), fake_data)
