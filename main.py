@@ -35,8 +35,6 @@ def parse_args():
     parser.add_argument('--train', action='store_true', default=False, help='Train or Test.')
     parser.add_argument('--sample', type=int, default=0, 
                         choices=[0, 1], help='Condition or Uncondition.')
-    parser.add_argument('--mode', type=str, default='infill',
-                        help='Infilling or Forecasting.')
     parser.add_argument('--milestone', type=int, default=10)
 
     parser.add_argument('--missing_ratio', type=float, default=0., help='Ratio of Missing Values.')
