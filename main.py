@@ -82,3 +82,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+#(myenv) $ python main.py --name {name} --config_file {config.yaml} --gpu 0 --sample 0 --milestone {checkpoint_number}
