@@ -1,0 +1,19 @@
+==> torch version: 2.0.1+cpu
+==> cudnn version: None
+==> Cmd:
+['main.py', '--name', '{name}', '--config_file', './Configs/stocks.yaml', '--train']
+==> args:
+  config_file: ./Configs/stocks.yaml
+  cudnn_deterministic: False
+  gpu: None
+  milestone: 10
+  missing_ratio: 0.0
+  name: {name}
+  opts: []
+  output: OUTPUT
+  pred_len: 0
+  sample: 0
+  save_dir: OUTPUT\{name}
+  seed: 12345
+  tensorboard: False
+  train: True
