@@ -12,6 +12,7 @@ The repository is to be refined for code readability, but it is fully functional
   <br><br>
   <img src="Assets/Decoder.png" alt="Decoder" width="75%"/>
 </div>
+
 ## Progressive Distillation 
 Distillation of the originally trained model teaches a student to sample with half the Diffusion steps of the teacher, rendering the original network into a narrower, faster one. The training procedure follows the one originally proposed in "Progressive Distillation for Fast Sampling of Diffusion Models", by Tim Salimans and Jonathan Ho https://openreview.net/forum?id=TIdIXIpzhoI , with slight adaptions due to the use of stochastic samplers. 
 
