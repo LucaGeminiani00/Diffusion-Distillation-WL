@@ -2,9 +2,9 @@
 
 ## Project Description 
 
-This repository is the main source code of my master of science thesis at Bocconi University, titled: "Diffusion Wavelet: Interpretable diffusion and Progressive Distillation for time series synthesis". It provides an extension of the Diffusion-TS model, proposed in https://github.com/Y-debug-sys/Diffusion-TS, by changing the underlying logic for learning the Seasonal and Trend components of the time series, exploiting the Wavelet Transform rather than the Fourier Transform. 
-It also provides an implementation of Progressive Distillation, extending it to the Time Series domain.
-The repository is to be refined for code readability, but it is fully functional. The colab notebook provided can be quickly exploited to train the diffusion models on GPUs. 
+This repository is the source code of my master of science thesis at Bocconi University, titled: "Diffusion Wavelet: Interpretable diffusion and Progressive Distillation for time series synthesis". It provides an extension of the Diffusion-TS model, proposed in https://github.com/Y-debug-sys/Diffusion-TS, by changing the underlying logic for learning the Seasonal and Trend components of the time series, exploiting the Wavelet Transform rather than the Fourier Transform. 
+After training, the repository also provides an implementation of progressive distillation, allowing to move from 500 - 250 up to 8 - 4 sampling steps, reducing sampling time linearly.
+The colab notebook provided can be exploited to train the diffusion models on GPUs. 
 
 ## Model's Encoder-Decoder structure
 <div align="center">
