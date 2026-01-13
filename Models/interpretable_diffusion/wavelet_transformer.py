@@ -72,17 +72,55 @@ class NonPeriodic(nn.Module):
         return pred
 
 
-class Periodic(nn.Module):    
-    def __init__(self):
-        super(Periodic, self).__init__()
+class Periodic(nn.Module):
+    """
+    Periodic component modeled via wavelet decomposition with
+    learnable scale-wise sigmoid gating.
 
-        self.dwt = DWT1DForward(wave='db6', J=3)
-        self.idwt = DWT1DInverse(wave='db6')
-        
+    Input shape : (B, C, T)
+    Output shape: (B, C, T)
+    """
+
+    def __init__(self, J=3, wave='db6'):
+        super().__init__()
+
+        self.J = J
+        self.dwt = DWT1DForward(wave=wave, J=J)
+        self.idwt = DWT1DInverse(wave=wave)
+
+        # Learnable gate parameters:
+        # w_1,...,w_J   -> detail scales
+        # w_{J+1}       -> scaling coefficients
+        self.w = nn.Parameter(torch.zeros(J + 1))
+
     def forward(self, x):
-        yl, yh = self.dwt(x) 
-        pred = self.idwt((yl,yh))
-        return pred
+        """
+        Args:
+            x: Tensor of shape (B, C, T)
+
+        Returns:
+            Tensor of shape (B, C, T)
+        """
+        # Wavelet decomposition
+        yl, yh = self.dwt(x)
+
+        # Sigmoid gates (scalars)
+        g = torch.sigmoid(self.w)
+
+        # Gate scaling (low-frequency) coefficients
+        yl_hat = yl * g[-1]   # (B, C, T / 2^J)
+
+        # Gate detail coefficients (one gate per scale)
+        yh_hat = [
+            yh[j] * g[j]      # (B, C, T / 2^(j+1))
+            for j in range(self.J)
+        ]
+
+        # Inverse wavelet transform
+        out = self.idwt((yl_hat, yh_hat))
+
+        return out
+
 
 
 class FullAttention(nn.Module):
