@@ -30,7 +30,7 @@ The full libraries list is provided as a requirements.txt in this repo. Please c
 ```
 
 ## Training 
-For training, you can then proceed by running the following command on any of the datasets for which you have setup a yaml config. It is always possible to add new datasets as long as you specify correctly the configuration. 
+For training, you can then proceed by running the following command on any of the datasets for which you have setup a yaml config. It is always possible to add new datasets as long as you specify correctly the configuration. A Google Colab notebook for training the models and computing relevant evaluation scores is also available at [Google Drive](https://colab.research.google.com/drive/1elaiT7NVuzLu87uAe-iaCnvA-gnETrkc#scrollTo=J0gwaUkOUGT1 )
 
 ```bash
 (.myenv) $ python main.py --name {name} --config_file {local_path\config.yaml} --gpu 0 --train
