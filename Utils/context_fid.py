@@ -3,13 +3,21 @@ import scipy
 from Models.ts2vec.ts2vec import TS2Vec
 
 
-class ContextFIDCalculator():
+class ContextFIDCalculator:
     """
     Class to calculate the Context-FID score for time-series data.
     Original and generated data are mandatory inputs at initialization.
     """
 
-    def __init__(self, ori_data, device=0, batch_size=8, lr=0.001, output_dims=320, max_train_length=3000):
+    def __init__(
+        self,
+        ori_data,
+        device=0,
+        batch_size=8,
+        lr=0.001,
+        output_dims=320,
+        max_train_length=3000,
+    ):
         self.ori_data = ori_data
 
         self.model = TS2Vec(
@@ -18,7 +26,7 @@ class ContextFIDCalculator():
             batch_size=batch_size,
             lr=lr,
             output_dims=output_dims,
-            max_train_length=max_train_length
+            max_train_length=max_train_length,
         )
         self.is_trained = False
 
@@ -30,8 +38,12 @@ class ContextFIDCalculator():
         if not self.is_trained:
             raise RuntimeError("Model must be trained before computing FID.")
 
-        ori_representation = self.model.encode(self.ori_data, encoding_window='full_series')
-        gen_representation = self.model.encode(generated_data, encoding_window='full_series')
+        ori_representation = self.model.encode(
+            self.ori_data, encoding_window="full_series"
+        )
+        gen_representation = self.model.encode(
+            generated_data, encoding_window="full_series"
+        )
 
         idx = np.random.permutation(self.ori_data.shape[0])
         ori_representation = ori_representation[idx]

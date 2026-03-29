@@ -1,7 +1,8 @@
-import numpy as np 
+import numpy as np
+
 
 def kl_divergence(p, q):
-    """Compute the Kullback-Leibler divergence between two distributions.
+    r"""Compute the Kullback-Leibler divergence between two distributions.
 
     The KL divergence is defined as
     :math:`D_{KL}(p, q) = \sum_x p(x_i) * (\log p(x_i) - \log q(x_i))`
@@ -30,6 +31,3 @@ def kl_divergence(p, q):
     # Compute KL divergence
     kl_div = np.sum(p * np.log(p / q))
     return kl_div
-
-
-   
