@@ -4,7 +4,7 @@ import argparse
 import numpy as np
 
 from Engine.logger import Logger
-from Engine.trainer import Engine
+from Engine.trainer import Engine, full_distill
 from Datasets.create_dataloader import create_dataloader
 from Models.interpretable_diffusion.model_utils import unnormalize_to_zero_to_one
 from Utils.io_utils import (
@@ -48,9 +48,21 @@ def parse_args() -> argparse.Namespace:
         " used, and ddp will be disabled",
     )
 
-    # args for training
     parser.add_argument(
-        "--train", action="store_true", default=False, help="Train or Test."
+        "--train", action="store_true", default=False, help="Train the diffusion model."
+    )
+    parser.add_argument(
+        "--distill",
+        action="store_true",
+        default=False,
+        help="Run progressive distillation. Requires a trained checkpoint (--milestone) "
+             "unless combined with --train, which trains first then distills.",
+    )
+    parser.add_argument(
+        "--distill_iters",
+        type=int,
+        default=4,
+        help="Number of progressive distillation rounds. Each round halves sampling steps.",
     )
     parser.add_argument(
         "--sample",
@@ -97,15 +109,21 @@ def main() -> None:
     logger: Logger[argparse.Namespace] = Logger(args)
     logger.save_config(config)
 
-    model = instantiate_from_config(config["model"]).cuda()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = instantiate_from_config(config["model"]).to(device)
 
     dataloader_info = create_dataloader(config, args)
-    trainer: Engine[os.Any | Any, argparse.Namespace, os.Any, dict[str, Any]] = Engine(
+    trainer = Engine(
         config=config, args=args, model=model, dataloader=dataloader_info, logger=logger
     )
 
     if args.train:
         trainer.train()
+        if args.distill:
+            full_distill(trainer, config, dataloader_info, args.distill_iters)
+    elif args.distill:
+        trainer.load(args.milestone)
+        full_distill(trainer, config, dataloader_info, args.distill_iters)
     else:
         trainer.load(args.milestone)
         dataset = dataloader_info["dataset"]
@@ -120,7 +138,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
-# (myenv) $ python main.py --name {name} --config_file {config.yaml} --gpu 0
-# --sample 0 --milestone {checkpoint_number}

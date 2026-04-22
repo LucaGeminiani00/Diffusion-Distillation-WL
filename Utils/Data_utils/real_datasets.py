@@ -75,7 +75,9 @@ class CustomDataset(Dataset):
         super(CustomDataset, self).__init__()
         assert period in ["train", "test"], "period must be train or test."
         if period == "train":
-            assert ~(predict_length is not None or missing_ratio is not None), ""
+            assert not (predict_length is not None or missing_ratio is not None), (
+                "predict_length and missing_ratio are only valid for period='test'"
+            )
         self.name, self.pred_len, self.missing_ratio = (
             name,
             predict_length,

@@ -1,5 +1,5 @@
 model:
-  target: Models.interpretable_diffusion.gaussian_diffusion.Diffusion_FS
+  target: Models.interpretable_diffusion.gaussian_diffusion.DiffusionWL
   params:
     seq_length: 24
     feature_size: 6

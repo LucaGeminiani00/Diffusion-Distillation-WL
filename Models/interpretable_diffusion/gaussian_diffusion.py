@@ -30,7 +30,7 @@ def cosine_beta_schedule(timesteps, s=0.008):
     return torch.clip(betas, 0, 0.999)
 
 
-class Diffusion_FS(nn.Module):
+class DiffusionWL(nn.Module):
     def __init__(
         self,
         seq_length,
@@ -53,7 +53,7 @@ class Diffusion_FS(nn.Module):
         reg_weight=None,
         **kwargs,
     ):
-        super(Diffusion_FS, self).__init__()
+        super(DiffusionWL, self).__init__()
 
         self.teacher = None
         self.eta, self.use_ff = eta, use_ff
@@ -89,12 +89,8 @@ class Diffusion_FS(nn.Module):
 
         (timesteps,) = betas.shape
         self.num_timesteps = int(timesteps)
-        self.sampling_timesteps = int(sampling_timesteps)
         self.loss_type = loss_type
-
-        # sampling related parameters
-
-        self.sampling_timesteps = default(sampling_timesteps, timesteps)
+        self.sampling_timesteps = int(default(sampling_timesteps, timesteps))
 
         # helper function to register buffer from float64 to float32
 

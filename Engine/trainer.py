@@ -1,3 +1,4 @@
+import copy
 import os
 import sys
 import time
@@ -26,12 +27,14 @@ def cycle(dl):
 
 
 def full_distill(teacher, configs, dl_info, iters):
+    # Deep-copy so distillation does not mutate the caller's config dict.
+    configs = copy.deepcopy(configs)
+
     teacher_keys = teacher.model.state_dict()
     numsteps = teacher.model.num_timesteps
     changeable = clean_keys(teacher_keys, numsteps)
 
     students = {}
-    count = 0
 
     for count in range(iters):
         if count == 0:
@@ -45,6 +48,7 @@ def full_distill(teacher, configs, dl_info, iters):
                 args=teacher.args,
                 model=next_model,
                 dataloader=dl_info,
+                logger=teacher.logger,
             )
             student.model.load_state_dict(teacher_keys)
             student.model.teacher = teacher
@@ -66,6 +70,7 @@ def full_distill(teacher, configs, dl_info, iters):
                 args=teacher.args,
                 model=next_model,
                 dataloader=dl_info,
+                logger=teacher.logger,
             )
             student.model.load_state_dict(teacher_keys)
             student.model.teacher = students[f"student{count - 1}"]
@@ -275,25 +280,3 @@ class Engine(object):
                 "Sampling done, time: {:.2f}".format(time.time() - tic)
             )
         return samples
-
-    def exact_sample(
-        self, num, size_every, shape=None, forward_data=None, specific=None
-    ):  # added
-        if self.logger is not None:
-            tic = time.time()
-            self.logger.log_info("Begin to sample...")
-        samples = np.empty([0, shape[0], shape[1]])
-        num_cycle = int(num // size_every) + 1
-
-        for _ in range(num_cycle):
-            sample, imgs = self.ema.ema_model.generate_mts(
-                batch_size=size_every, forward_data=forward_data, specific=specific
-            )
-            samples = np.row_stack([samples, sample.detach().cpu().numpy()])
-            torch.cuda.empty_cache()
-
-        if self.logger is not None:
-            self.logger.log_info(
-                "Sampling done, time: {:.2f}".format(time.time() - tic)
-            )
-        return samples, imgs

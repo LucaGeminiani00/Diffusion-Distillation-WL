@@ -32,7 +32,9 @@ class SineDataset(Dataset):
         super(SineDataset, self).__init__()
         assert period in ["train", "test"], "period must be train or test."
         if period == "train":
-            assert ~(predict_length is not None or missing_ratio is not None), ""
+            assert not (predict_length is not None or missing_ratio is not None), (
+                "predict_length and missing_ratio are only valid for period='test'"
+            )
 
         self.pred_len, self.missing_ratio = predict_length, missing_ratio
         self.style, self.distribution, self.mean_mask_length = (
@@ -72,8 +74,8 @@ class SineDataset(Dataset):
 
     def normalize(self, rawdata):
         if self.auto_norm:
-            data = normalize_to_neg_one_to_one(rawdata)
-        return data
+            return normalize_to_neg_one_to_one(rawdata)
+        return rawdata
 
     def unnormalize(self, data):
         if self.auto_norm:

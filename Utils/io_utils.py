@@ -226,7 +226,7 @@ def build_from_teacher(config, device, target=None):
     if target is None:
         config["model"][
             "target"
-        ] = "Models.knowledge_distillation.progressive_distillation.Diffusion_FS"
+        ] = "Models.knowledge_distillation.progressive_distillation.DiffusionWL"
         config["model"]["params"]["timesteps"] //= 2
         config["model"]["params"]["sampling_timesteps"] //= 2
         model = instantiate_from_config(config["model"]).to(device)
@@ -235,7 +235,7 @@ def build_from_teacher(config, device, target=None):
         ratio = config["model"]["params"]["timesteps"] // target
         config["model"][
             "target"
-        ] = "Models.knowledge_distillation.progressive_distillation.Diffusion_FS"
+        ] = "Models.knowledge_distillation.progressive_distillation.DiffusionWL"
         config["model"]["params"]["timesteps"] //= ratio
         config["model"]["params"]["sampling_timesteps"] //= ratio
         model = instantiate_from_config(config["model"]).to(device)
