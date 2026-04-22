@@ -5,8 +5,8 @@ import torch
 
 
 class DWT1DForward(nn.Module):
-   
-    def __init__(self, J=1, wave='db1', mode='zero'):
+
+    def __init__(self, J=1, wave="db1", mode="zero"):
         super().__init__()
         if isinstance(wave, str):
             wave = pywt.Wavelet(wave)
@@ -18,13 +18,13 @@ class DWT1DForward(nn.Module):
 
         # Prepare the filters - this makes them into column filters
         filts = lowlevel.prep_filt_afb1d(h0, h1)
-        self.register_buffer('h0', filts[0])
-        self.register_buffer('h1', filts[1])
+        self.register_buffer("h0", filts[0])
+        self.register_buffer("h1", filts[1])
         self.J = J
         self.mode = mode
 
     def forward(self, x):
-        """ Forward pass of the DWT.
+        """Forward pass of the DWT.
 
         Args:
             x (tensor): Input of shape :math:`(N, C_{in}, L_{in})`
@@ -49,7 +49,7 @@ class DWT1DForward(nn.Module):
 
 
 class DWT1DInverse(nn.Module):
-    def __init__(self, wave='db1', mode='zero'):
+    def __init__(self, wave="db1", mode="zero"):
         super().__init__()
         if isinstance(wave, str):
             wave = pywt.Wavelet(wave)
@@ -61,8 +61,8 @@ class DWT1DInverse(nn.Module):
 
         # Prepare the filters
         filts = lowlevel.prep_filt_sfb1d(g0, g1)
-        self.register_buffer('g0', filts[0])
-        self.register_buffer('g1', filts[1])
+        self.register_buffer("g0", filts[0])
+        self.register_buffer("g1", filts[1])
         self.mode = mode
 
     def forward(self, coeffs):

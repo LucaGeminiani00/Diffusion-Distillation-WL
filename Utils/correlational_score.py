@@ -20,7 +20,14 @@ def cacf_torch(x, max_lag, dim=(0, 1)):
 
 
 class Loss(nn.Module):
-    def __init__(self, reg=1.0, transform=lambda x: x, threshold=10., backward=False, norm_foo=lambda x: x):
+    def __init__(
+        self,
+        reg=1.0,
+        transform=lambda x: x,
+        threshold=10.0,
+        backward=False,
+        norm_foo=lambda x: x,
+    ):
         super(Loss, self).__init__()
         self.reg = reg
         self.transform = transform
@@ -35,12 +42,17 @@ class Loss(nn.Module):
     def compute(self, x_fake):
         raise NotImplementedError()
 
+
 class CrossCorrelLoss(Loss):
     def __init__(self, x_real, **kwargs):
-        super(CrossCorrelLoss, self).__init__(norm_foo=lambda x: torch.abs(x).sum(0), **kwargs)
+        super(CrossCorrelLoss, self).__init__(
+            norm_foo=lambda x: torch.abs(x).sum(0), **kwargs
+        )
         self.cross_correl_real = cacf_torch(self.transform(x_real), 1).mean(0)[0]
 
     def compute(self, x_fake):
         cross_correl_fake = cacf_torch(self.transform(x_fake), 1).mean(0)[0]
-        loss = self.norm_foo(cross_correl_fake - self.cross_correl_real.to(x_fake.device))
-        return loss / 10.
+        loss = self.norm_foo(
+            cross_correl_fake - self.cross_correl_real.to(x_fake.device)
+        )
+        return loss / 10.0

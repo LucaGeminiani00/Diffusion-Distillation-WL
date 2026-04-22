@@ -6,10 +6,14 @@ import pandas as pd
 from scipy import io
 from sklearn.preprocessing import MinMaxScaler
 from torch.utils.data import Dataset
-from Models.interpretable_diffusion.model_utils import normalize_to_neg_one_to_one, unnormalize_to_zero_to_one
+from Models.interpretable_diffusion.model_utils import (
+    normalize_to_neg_one_to_one,
+    unnormalize_to_zero_to_one,
+)
 from Utils.masking_utils import noise_mask
 
-def getids(data, ratio=1, seed=123): #add
+
+def getids(data, ratio=1, seed=123):  # add
     size = data.shape[0]
     st0 = np.random.get_state()
     np.random.seed(seed)
@@ -22,56 +26,70 @@ def getids(data, ratio=1, seed=123): #add
 
     np.random.set_state(st0)
 
-    if ratio==1: 
-        return regular_train_id 
-    else: 
+    if ratio == 1:
+        return regular_train_id
+    else:
         return regular_train_id, irregular_train_id
 
-def reconstruct_data(regular_data, regular_train_id, irregular_data=None, irregular_train_id=None): #add 
-    if irregular_data is not None: 
+
+def reconstruct_data(
+    regular_data, regular_train_id, irregular_data=None, irregular_train_id=None
+):  # add
+    if irregular_data is not None:
         size = len(regular_data) + len(irregular_data)
-     
-        data_shape = regular_data.shape[1:]  
-        data_reconstructed = np.zeros((size, *data_shape))  
+
+        data_shape = regular_data.shape[1:]
+        data_reconstructed = np.zeros((size, *data_shape))
 
         data_reconstructed[regular_train_id] = regular_data
         data_reconstructed[irregular_train_id] = irregular_data
-    else: 
-        size = len(regular_data) 
+    else:
+        size = len(regular_data)
 
-        data_shape = regular_data.shape[1:]  
-        data_reconstructed = np.zeros((size, *data_shape))  
+        data_shape = regular_data.shape[1:]
+        data_reconstructed = np.zeros((size, *data_shape))
 
         data_reconstructed[regular_train_id] = regular_data
 
     return data_reconstructed
 
+
 class CustomDataset(Dataset):
     def __init__(
-        self, 
+        self,
         name,
-        data_root, 
-        window=64, 
-        proportion=0.8, 
-        save2npy=True, 
+        data_root,
+        window=64,
+        proportion=0.8,
+        save2npy=True,
         neg_one_to_one=True,
         seed=123,
-        period='train',
-        output_dir='./OUTPUT',
+        period="train",
+        output_dir="./OUTPUT",
         predict_length=None,
         missing_ratio=None,
-        style='separate', 
-        distribution='geometric', 
-        mean_mask_length=3
+        style="separate",
+        distribution="geometric",
+        mean_mask_length=3,
     ):
         super(CustomDataset, self).__init__()
-        assert period in ['train', 'test'], 'period must be train or test.'
-        if period == 'train':
-            assert ~(predict_length is not None or missing_ratio is not None), ''
-        self.name, self.pred_len, self.missing_ratio = name, predict_length, missing_ratio
-        self.style, self.distribution, self.mean_mask_length = style, distribution, mean_mask_length
+        assert period in ["train", "test"], "period must be train or test."
+        if period == "train":
+            assert not (predict_length is not None or missing_ratio is not None), (
+                "predict_length and missing_ratio are only valid for period='test'"
+            )
+        self.name, self.pred_len, self.missing_ratio = (
+            name,
+            predict_length,
+            missing_ratio,
+        )
+        self.style, self.distribution, self.mean_mask_length = (
+            style,
+            distribution,
+            mean_mask_length,
+        )
         self.rawdata, self.scaler = self.read_data(data_root, self.name)
-        self.dir = os.path.join(output_dir, 'samples')
+        self.dir = os.path.join(output_dir, "samples")
         os.makedirs(self.dir, exist_ok=True)
 
         self.window, self.period = window, period
@@ -83,8 +101,8 @@ class CustomDataset(Dataset):
         self.data = self.__normalize(self.rawdata)
         train, inference = self.__getsamples(self.data, proportion, seed)
 
-        self.samples = train if period == 'train' else inference
-        if period == 'test':
+        self.samples = train if period == "train" else inference
+        if period == "test":
             if missing_ratio is not None:
                 self.masking = self.mask_data(seed)
             elif predict_length is not None:
@@ -106,16 +124,46 @@ class CustomDataset(Dataset):
 
         if self.save2npy:
             if 1 - proportion > 0:
-                np.save(os.path.join(self.dir, f"{self.name}_ground_truth_{self.window}_test.npy"), self.unnormalize(test_data))
-            np.save(os.path.join(self.dir, f"{self.name}_ground_truth_{self.window}_train.npy"), self.unnormalize(train_data))
+                np.save(
+                    os.path.join(
+                        self.dir, f"{self.name}_ground_truth_{self.window}_test.npy"
+                    ),
+                    self.unnormalize(test_data),
+                )
+            np.save(
+                os.path.join(
+                    self.dir, f"{self.name}_ground_truth_{self.window}_train.npy"
+                ),
+                self.unnormalize(train_data),
+            )
             if self.auto_norm:
                 if 1 - proportion > 0:
-                    np.save(os.path.join(self.dir, f"{self.name}_norm_truth_{self.window}_test.npy"), unnormalize_to_zero_to_one(test_data))
-                np.save(os.path.join(self.dir, f"{self.name}_norm_truth_{self.window}_train.npy"), unnormalize_to_zero_to_one(train_data))
+                    np.save(
+                        os.path.join(
+                            self.dir, f"{self.name}_norm_truth_{self.window}_test.npy"
+                        ),
+                        unnormalize_to_zero_to_one(test_data),
+                    )
+                np.save(
+                    os.path.join(
+                        self.dir, f"{self.name}_norm_truth_{self.window}_train.npy"
+                    ),
+                    unnormalize_to_zero_to_one(train_data),
+                )
             else:
                 if 1 - proportion > 0:
-                    np.save(os.path.join(self.dir, f"{self.name}_norm_truth_{self.window}_test.npy"), test_data)
-                np.save(os.path.join(self.dir, f"{self.name}_norm_truth_{self.window}_train.npy"), train_data)
+                    np.save(
+                        os.path.join(
+                            self.dir, f"{self.name}_norm_truth_{self.window}_test.npy"
+                        ),
+                        test_data,
+                    )
+                np.save(
+                    os.path.join(
+                        self.dir, f"{self.name}_norm_truth_{self.window}_train.npy"
+                    ),
+                    train_data,
+                )
 
         return train_data, test_data
 
@@ -129,7 +177,7 @@ class CustomDataset(Dataset):
     def unnormalize(self, sq):
         d = self.__unnormalize(sq.reshape(-1, self.var_num))
         return d.reshape(-1, self.window, self.var_num)
-    
+
     def __normalize(self, rawdata):
         data = self.scaler.transform(rawdata)
         if self.auto_norm:
@@ -141,7 +189,7 @@ class CustomDataset(Dataset):
             data = unnormalize_to_zero_to_one(data)
         x = data
         return self.scaler.inverse_transform(x)
-    
+
     @staticmethod
     def divide(data, ratio, seed=2023):
         size = data.shape[0]
@@ -163,17 +211,16 @@ class CustomDataset(Dataset):
         return regular_data, irregular_data
 
     @staticmethod
-    def read_data(filepath, name=''):
-        """Reads a single .csv
-        """
+    def read_data(filepath, name=""):
+        """Reads a single .csv"""
         df = pd.read_csv(filepath, header=0)
-        if name == 'etth':
+        if name == "etth":
             df.drop(df.columns[0], axis=1, inplace=True)
         data = df.values
         scaler = MinMaxScaler()
         scaler = scaler.fit(data)
         return data, scaler
-    
+
     def mask_data(self, seed=2023):
         masks = np.ones_like(self.samples)
         # Store the state of the RNG to restore later.
@@ -182,19 +229,26 @@ class CustomDataset(Dataset):
 
         for idx in range(self.samples.shape[0]):
             x = self.samples[idx, :, :]  # (seq_length, feat_dim) array
-            mask = noise_mask(x, self.missing_ratio, self.mean_mask_length, self.style,
-                              self.distribution)  # (seq_length, feat_dim) boolean array
+            mask = noise_mask(
+                x,
+                self.missing_ratio,
+                self.mean_mask_length,
+                self.style,
+                self.distribution,
+            )  # (seq_length, feat_dim) boolean array
             masks[idx, :, :] = mask
 
         if self.save2npy:
-            np.save(os.path.join(self.dir, f"{self.name}_masking_{self.window}.npy"), masks)
+            np.save(
+                os.path.join(self.dir, f"{self.name}_masking_{self.window}.npy"), masks
+            )
 
         # Restore RNG.
         np.random.set_state(st0)
         return masks.astype(bool)
 
     def __getitem__(self, ind):
-        if self.period == 'test':
+        if self.period == "test":
             x = self.samples[ind, :, :]  # (seq_length, feat_dim) array
             m = self.masking[ind, :, :]  # (seq_length, feat_dim) boolean array
             return torch.from_numpy(x).float(), torch.from_numpy(m)
@@ -203,21 +257,16 @@ class CustomDataset(Dataset):
 
     def __len__(self):
         return self.sample_num
-    
+
 
 class fMRIDataset(CustomDataset):
-    def __init__(
-        self, 
-        proportion=1., 
-        **kwargs
-    ):
+    def __init__(self, proportion=1.0, **kwargs):
         super().__init__(proportion=proportion, **kwargs)
 
     @staticmethod
-    def read_data(filepath, name=''):
-        """Reads a single .csv
-        """
-        data = io.loadmat(filepath + '/sim4.mat')['ts']
+    def read_data(filepath, name=""):
+        """Reads a single .csv"""
+        data = io.loadmat(filepath + "/sim4.mat")["ts"]
         scaler = MinMaxScaler()
         scaler = scaler.fit(data)
         return data, scaler
